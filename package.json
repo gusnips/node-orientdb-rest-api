@@ -1,0 +1,24 @@
+{
+  "name": "orientdb-rest-api",
+  "version": "1.0.0",
+  "description": "A node.js driver for OrientDB using the OrientDB RESTful HTTP protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/run.js"
+  },
+  "devDependencies": {
+    "tap": "~0.2.4"
+  },
+  "dependencies": {
+    "axios": "~0.17.1"
+  },
+  "repository": "git@github.com:gusnips/node-oriendb-rest-api.git",
+  "keywords": [
+    "orientdb",
+    "rest",
+    "api",
+    "http"
+  ],
+  "author": "Gustavo Salome",
+  "license": "MIT"
+}
