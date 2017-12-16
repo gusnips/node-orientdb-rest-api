@@ -11,6 +11,9 @@ const EventEmitter = require('events')
    password: 'root_passwd',
    host: 'http://127.0.0.1:2480',
    database: 'GratefulDeadConcerts',
+   language: 'sql',
+   timeout: 60*1000*5,
+   maxContentLength: 50 * 1000 * 1000,
 }
 class Connection extends EventEmitter{
   constructor(config) {
@@ -19,20 +22,11 @@ class Connection extends EventEmitter{
     this.password=config.password || defaultConfig.password
     this.host=config.host || defaultConfig.host
     this.database=config.database || defaultConfig.database
-
+    this._language=config.language || defaultConfig.language
     const authHeader=Buffer.from(this.user+':'+this.password).toString('base64')
     this._axios = axios.create({
-      // 5 minutes sec timeout
-      timeout: 60*1000*5,
-      //follow up to 10 HTTP 3xx redirects
-      maxRedirects: 10,
-      //cap the maximum content length we'll accept to 50MBs, just in case
-      maxContentLength: 50 * 1000 * 1000,
-      // withCredentials: true,
-      // auth: {
-      //   user: this.user,
-      //   pass: this.password,
-      // },
+      timeout: defaultConfig.timeout, // 5 minutes sec timeout
+      maxContentLength: defaultConfig.maxContentLength, // 50MBs, just in case
       headers: {
         common: {
           authorization: 'Basic '+authHeader
@@ -40,55 +34,87 @@ class Connection extends EventEmitter{
       }
     })
 
-    const methods = ['post', 'get', 'put', 'delete']
-    const self=this
+    const methods = ['post', 'get', 'put', 'delete', 'head', 'patch']
     methods.forEach((method)=>{
       this[method] = (command, args, body)=>{
-        return self.request(method.toLowerCase(), command, args, body)
+        return this.request(method.toLowerCase(), command, args, body)
       }
     })
   }
 
   connect(){
-    this.get('connect').then(()=>{
-      this.emit('connect', this)
+    return this.get('connect').then((response)=>{
+      this.emit('connected', this)
+      return response
     }).catch((err)=>{
       this.emit('error', err)
+      return err
     })
-    return this
   }
 
   disconnect(){
-    const self = this;
-    request.get(this.host + '/disconnect', function(err, response, body) {
-      if (err) return self.trigger('error', err)
-      self.trigger('disconnect')
+    this._axios.get(this.host+'/disconnect').then((response, body)=>{
+      this.trigger('disconnect', response, body)
+    }).catch(err=>{
+      if (err)
+        return this.trigger('error', err)
     })
     return this
   }
 
   request(method, command, args, data) {
-    const url = this.host + '/' + command + '/' + this.database + (args ? '/' + args : '')
+    //fix for # in url
+    args=args ? args.replace('#','') : ''
+    const url = this.host+'/'+command+'/'+this.database+'/'+args
     return this._axios({
       method: method,
       url: url,
       data: data
+    }).then((response)=>{
+      if(response.data)
+        return response.data
+      return response
+    }).catch(err=>{
+      if(!err)
+        this.emit('error')
+      else if(err.response && err.response.data)
+        this.emit('error',err.response.data, err)
+      else if(err.message)
+        this.emit('error',err.message, err)
+      else
+        this.emit('error',err)
+      return err
     })
+  }
+
+  command(command, parameters, limit, fetchplan) {
+    let args=this._language
+    if(limit || fetchplan)
+      args=this._makeArgsUrl('', limit, fetchplan)
+    return this.post('command', args, {
+      command: command,
+      parameters: parameters || []
+    }, limit, fetchplan)
+  }
+
+  query(query, parameters, limit, fetchplan) {
+    const language = this._language;
+    if(!parameters){
+      const args=this._makeArgsUrl(query, limit, fetchplan)
+      return this.get('query', args)
+    }
+    return this.command(query, parameters, limit, fetchplan)
+  }
+  _makeArgsUrl(command, limit, fetchplan){
+    limit=limit || ''
+    fetchplan=fetchplan || ''
+    command=encodeURIComponent(command)
+    return `${this._language}/${command}/${limit}/${fetchplan}`
   }
 
   language(language) {
     this._language = language;
     return this
-  }
-
-  command(command) {
-    const language = this._language || 'sql';
-    return this.post('command', language, command)
-  }
-
-  query(query, limit, fetchplan) {
-    const language = this._language || 'sql';
-    return this.get('query', language + '/' + encodeURIComponent(query) + (limit ? '/' + limit + (fetchplan ? '/' + fetchplan : '') : ''))
   }
 }
 
@@ -97,8 +123,4 @@ class Connection extends EventEmitter{
  * creates new connection instance
  */
 
-Connection.connect = (config, callback)=>{
-  const db = new Connection(config)
-  return db.connect()
-}
 module.exports=Connection
