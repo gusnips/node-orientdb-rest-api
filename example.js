@@ -2,7 +2,7 @@ const OrientDB=require ('./index')
 const db=new OrientDB({
   user: 'root',
   password: 'root_passwd',
-  host: 'http://45.55.159.35:2480',
+  host: 'http://127.0.0.1:2480',
   database: 'GratefulDeadConcerts',
 })
 db.connect().then(async ()=>{
