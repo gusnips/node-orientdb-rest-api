@@ -1,7 +1,7 @@
 orientdb-rest-api
 ==================
 
-A Node.js driver for [OrientDb](http://www.orientdb.org/) using the [OrientDB RESTful HTTP protocol]((http://orientdb.com/docs/2.2.x/OrientDB-REST.html)
+A Node.js driver for [OrientDb](http://www.orientdb.org/) using the OrientDB REST [HTTP protocol](http://orientdb.com/docs/2.2.x/OrientDB-REST.html)
 
 Very basic http wrapper using [axios](https://github.com/axios/axios) based on [node-orient-http](https://github.com/Havelaer/node-orientdb-http) and tested on [OrientDb](http://www.orientdb.org/) 2.2.31
 
