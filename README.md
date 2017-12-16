@@ -1,28 +1,51 @@
 orientdb-rest-api
 ==================
 
-A Node.js driver for [OrientDb](http://www.orientdb.org/) using the OrientDB REST [HTTP protocol](http://orientdb.com/docs/2.2.x/OrientDB-REST.html)
+A Node.js driver to talk to the [OrientDB REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html)
 
 Very basic http wrapper using [axios](https://github.com/axios/axios) based on [node-orient-http](https://github.com/Havelaer/node-orientdb-http) and tested on [OrientDb](http://www.orientdb.org/) 2.2.31
 
 ## Install
-```
+
+```bash
 npm install orientdb-rest-api
 ```
 
-## Connect
+## Basic Usage
+
 ```javascript
 const OrientDB=require('orientdb-rest-api');
 
-const db=OrientDB.connect({
+const db = new OrientDB({
   user: 'root',
   password: 'root_passwd',
   host: 'http://localhost:2480',
   database: 'GratefulDeadConcerts',
 })
-db.on('connect', ()=>{
+
+db.connect().then(async ()=>{
+  const result=await db.query('select * from V where name = "Batman"')
+  console.log(result.data)
+}).catch(err=>{
+  console.error(err.message)
+})
+db.connet
+```
+
+## Shorthand constructor
+
+```javascript
+const db = new OrientDB.connect({
+  user: 'root',
+  password: 'root_passwd',
+  host: 'http://localhost:2480',
+  database: 'GratefulDeadConcerts',
+})
+
+db.once('connect', ()=>{
   console.log('yes! connected')
 })
+//connection error
 db.on('error',err=>{
   console.log('err', err.message)
   process.exit()
@@ -35,7 +58,7 @@ db.on('error',err=>{
 // general api
 db.[get|post|put|delete](command, queryParams, postBody).then(successHandler).catch(errorHandler)
 
-db.post('document', null, { '@class': 'V', name: 'Gustavo'}).then(successHandler).catch(errorHandler)
+db.post('document', null, { '@class': 'V', name: 'Gustavo Salome'}).then(successHandler).catch(errorHandler)
 
 db.delete('document', '9:1').then(successHandler).catch(errorHandler)
 
