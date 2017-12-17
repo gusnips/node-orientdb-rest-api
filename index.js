@@ -1,6 +1,8 @@
 const axios = require('axios')
-// we don`t want to use node modules
+// we don`t want to use node core modules
 const EventEmitter=require("event-emitter")
+const base64 = require('base-64');
+
 /**
  * OrientDB Connection
  *
@@ -23,7 +25,7 @@ class Connection {
     this.host=config.host || defaultConfig.host
     this.database=config.database || defaultConfig.database
     this._language=config.language || defaultConfig.language
-    const authHeader=Buffer.from(this.user+':'+this.password).toString('base64')
+    const authHeader=base64.encode(this.user+':'+this.password)
     this._axios = axios.create({
       timeout: defaultConfig.timeout, // 5 minutes sec timeout
       maxContentLength: defaultConfig.maxContentLength, // 50MBs, just in case

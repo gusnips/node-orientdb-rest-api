@@ -1,6 +1,6 @@
 {
   "name": "orientdb-rest-api",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A node.js driver for OrientDB using the OrientDB RESTful HTTP protocol",
   "main": "index.js",
   "scripts": {
@@ -10,8 +10,9 @@
     "tap": "~0.2.4"
   },
   "dependencies": {
-    "event-emitter": "~0.3.5",
-    "axios": "~0.17.1"
+    "axios": "~0.17.1",
+    "base-64": "^0.1.0",
+    "event-emitter": "~0.3.5"
   },
   "repository": "git@github.com:gusnips/node-oriendb-rest-api.git",
   "keywords": [
