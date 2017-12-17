@@ -115,6 +115,7 @@ const db = new OrientDB({
 })
 
 db.connect()
+db.disconnect()
 // once connected
 db.once('connected', (response)=>{
   console.log('yes! connected')

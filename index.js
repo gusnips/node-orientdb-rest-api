@@ -132,4 +132,12 @@ EventEmitter(Connection.prototype)
  * creates new connection instance
  */
 
-module.exports=Connection
+ // Expose the class either via AMD, CommonJS or the global object
+ if (typeof define === 'function' && define.amd) {
+     define(function () { return Connection; });
+ } else if (typeof module === 'object' && module.exports){
+     module.exports = Connection;
+     exports.default = Connection
+ } else {
+     exports.Connection = Connection;
+ }
