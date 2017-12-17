@@ -1,6 +1,6 @@
 {
   "name": "orientdb-rest-api",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A node.js driver for OrientDB using the OrientDB RESTful HTTP protocol",
   "main": "index.js",
   "scripts": {

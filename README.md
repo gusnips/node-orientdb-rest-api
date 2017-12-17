@@ -31,7 +31,7 @@ db.connect().then(async ()=>{
 })
 ```
 
-## Command and Query
+## Command query and Query
 
 Syntax:
 ```js
@@ -43,28 +43,57 @@ Examples:
 
 ```javascript
 db.command('insert into V set name = ?', ["Batman"]).then(async ()=>{
-  let res
-  // named parameters
-  res=await db.query('select * from V where name = :name', null, null, {
+  // named parameters, no limit
+  const res=await db.query('select * from V where name = :name', {
     name: "Batman"
   })
-  console.log(res)
-  res=await db.command('select * from V where name = ?', ["Batman"], 1)
+  db.command('select * from V where name = ?', ["Batman"], 1).then(successHandler)
 }).catch((err)=>console.error(err))
+```
+
+Response will be something like:
+```json
+{
+  "result": [
+    {
+      "@type": "d",
+      "@rid": "#9:12",
+      "@version": 1,
+      "@class": "V",
+      "name": "Batman"
+    }
+  ]
+}
 ```
 
 ## Methods
 
+All methods return a Promise, see [axios](https://github.com/axios/axios) for more information  
+See [OrientDB-REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html) for a list of commands  
 ```javascript
 // general api
-db.[get|post|put|delete](command, queryParams, postBody).then(successHandler).catch(errorHandler)
+db.get(command, queryParams)
+db.delete(command, queryParams)
+db.head(command, queryParams)
 
-db.post('document', null, { '@class': 'V', name: 'Gustavo Salome'}).then(successHandler).catch(errorHandler)
+db.post(command, queryParams, postBody)
+db.put(command, queryParams, postBody)
+db.patch(command, queryParams, postBody)
 
-db.delete('document', '9:1').then(successHandler).catch(errorHandler)
+// create
+db.post('document', null, { '@class': 'V', name: 'Gustavo Salome'})
+  .then(successHandler)
+  .catch(errorHandler)
 
-// or specific commands
-db.command('insert into V set name = "Batman"').then(successHandler).catch(errorHandler)
+// deleting, should return true
+db.delete('document', '9:1')
+  .then(successHandler)
+  .catch(errorHandler)
+
+// create as command, should return the new record
+db.command('insert into V set name = "Batman"')
+  .then(successHandler)
+  .catch(errorHandler)
 
 db.query('select * from V where name = "Batman"').then((res)=>{
   console.log(res)
@@ -87,12 +116,15 @@ const db = new OrientDB({
 
 db.connect()
 // once connected
-db.once('connected', (db)=>{
+db.once('connected', (response)=>{
   console.log('yes! connected')
 })
-// on error
-db.on('error',err=>{
-  console.log('err', err.message)
+// on any error
+db.on('error',(message, err)=>{
+  console.log(message, err)
+})
+db.once('disconnected', (response)=>{
+  console.log('bye!')
 })
 ```
 
@@ -106,29 +138,33 @@ const db=new OrientDB({
   host: 'http://localhost:2480',
   database: 'GratefulDeadConcerts',
 })
-
-db.connect().then(async ()=>{
-  let res
+const config=require('./config/local')
+const db=new OrientDB(config)
+db.connect().then(async (res)=>{
+  console.log(res) // true
   res=await db.command('insert into V set name = ?', ["Batman"])
-  console.log(res)
+  console.log(res) // Object containing the new record
   res=await db.query('select * from V where name = :name', {
     name: "Batman"
   })
-  console.log(res)
+  console.log(res) // Object containing the fetched record
   res=await db.command('select * from V where name = ?', ["Batman"], 1)
-  console.log(res)
+  console.log(res) // Same object containing the fetched record
   res=await db.delete('document', res.result[0]['@rid'])
-  console.log(res.status)
-}).catch(err=>{
-  if(!err)
-    console.error('err')
-  else if(err.response && err.response.data)
-    console.error(err.response.data)
-  else if(err.message)
-    console.error(err.message)
-  else
-    console.error(err)
+  console.log(res) // true
+  res=await db.disconnect()
 })
+db.on('connected',(res)=>{
+  console.log('connected')
+})
+db.on('error',(message, err)=>{
+  console.log(message)
+  process.exit()
+})
+db.on('disconnected',(res)=>{
+  console.log('disconnected')
+})
+
 ```
 
 ## Api
@@ -139,8 +175,11 @@ See [OrientDB-REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html) for m
 
 Listening for error events
 ```js
-db.on('error',err=>{
-  console.log('err', err)
+db.on('error',(message, err)=>{
+  console.log(message, err)
+})
+db.query('error query').catch((err)=>{
+  console.log(err.message)
 })
 ```
 See [Axios Error Handling](https://github.com/axios/axios#handling-errors) for more information

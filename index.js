@@ -53,13 +53,14 @@ class Connection {
   }
 
   disconnect(){
-    this._axios.get(this.host+'/disconnect').then((response, body)=>{
-      this.emit('disconnect', response, body)
+    return this._axios.get(this.host+'/disconnect').then(response=>{
+      this.emit('disconnected', response)
+      return response
     }).catch(err=>{
+       // console.log('disconnect',err.message)
        this._onError(err)
        return err
     })
-    return this
   }
 
   request(method, command, args, data) {
