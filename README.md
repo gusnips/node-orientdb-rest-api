@@ -33,13 +33,23 @@ db.connect().then(async ()=>{
 
 ## Command and Query
 
+Syntax:
+```js
+db.query(query, parameters, limit, fetchplan)
+db.command(query, parameters, limit, fetchplan)
+```
+
+Examples:
+
 ```javascript
 db.command('insert into V set name = ?', ["Batman"]).then(async ()=>{
+  let res
   // named parameters
-  const queryResult=await db.query('select * from V where name = :name', null, null, {
+  res=await db.query('select * from V where name = :name', null, null, {
     name: "Batman"
   })
-  console.log(queryResult)
+  console.log(res)
+  res=await db.command('select * from V where name = ?', ["Batman"], 1)
 }).catch((err)=>console.error(err))
 ```
 

@@ -1,5 +1,6 @@
 const axios = require('axios')
-const EventEmitter = require('events')
+// we don`t want to use node modules
+const EventEmitter=require("event-emitter")
 /**
  * OrientDB Connection
  *
@@ -15,9 +16,8 @@ const EventEmitter = require('events')
    timeout: 60*1000*5,
    maxContentLength: 50 * 1000 * 1000,
 }
-class Connection extends EventEmitter{
+class Connection {
   constructor(config) {
-    super(config)
     this.user=config.user || defaultConfig.user
     this.password=config.password || defaultConfig.password
     this.host=config.host || defaultConfig.host
@@ -44,20 +44,20 @@ class Connection extends EventEmitter{
 
   connect(){
     return this.get('connect').then((response)=>{
-      this.emit('connected', this)
+      this.emit('connected', response)
       return response
     }).catch((err)=>{
-      this.emit('error', err)
+      this._onError(err)
       return err
     })
   }
 
   disconnect(){
     this._axios.get(this.host+'/disconnect').then((response, body)=>{
-      this.trigger('disconnect', response, body)
+      this.emit('disconnect', response, body)
     }).catch(err=>{
-      if (err)
-        return this.trigger('error', err)
+       this._onError(err)
+       return err
     })
     return this
   }
@@ -73,16 +73,11 @@ class Connection extends EventEmitter{
     }).then((response)=>{
       if(response.data)
         return response.data
+      else if(response.status===204)
+        return true
       return response
     }).catch(err=>{
-      if(!err)
-        this.emit('error')
-      else if(err.response && err.response.data)
-        this.emit('error',err.response.data, err)
-      else if(err.message)
-        this.emit('error',err.message, err)
-      else
-        this.emit('error',err)
+      this._onError(err)
       return err
     })
   }
@@ -112,12 +107,25 @@ class Connection extends EventEmitter{
     return `${this._language}/${command}/${limit}/${fetchplan}`
   }
 
+  _onError(err){
+    if(err){
+      if(err.message)
+        this.emit('error', err.message, err)
+      else if(err.response && err.response.data)
+        this.emit('error', err.response.data, err)
+      else
+        this.emit('error',err)
+    } else
+      this.emit('error')
+  }
+
   language(language) {
     this._language = language;
     return this
   }
 }
 
+EventEmitter(Connection.prototype)
 /**
  * public connect method
  * creates new connection instance
