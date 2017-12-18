@@ -1,6 +1,6 @@
 module.exports = {
-  host: "http://localhost:2480",
-  user: "admin",
-  password: "admin",
-  database: "test"
+  host: 'http://127.0.0.1:2480',
+  user: "root",
+  password: "root_passwd",
+  database: "GratefulDeadConcerts"
 }

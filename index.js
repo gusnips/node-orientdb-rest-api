@@ -1,7 +1,7 @@
-const axios = require('axios')
-// we don`t want to use node core modules
+// we don`t want to use node core modules to be able to use in electron/react/browser
+const request=require('superagent')
 const EventEmitter=require("event-emitter")
-const base64 = require('base-64');
+const base64=require("base-64")
 
 /**
  * OrientDB Connection
@@ -15,8 +15,7 @@ const base64 = require('base-64');
    host: 'http://127.0.0.1:2480',
    database: 'GratefulDeadConcerts',
    language: 'sql',
-   timeout: 60*1000*5,
-   maxContentLength: 50 * 1000 * 1000,
+   timeout: 1000*5,
 }
 class Connection {
   constructor(config) {
@@ -25,16 +24,8 @@ class Connection {
     this.host=config.host || defaultConfig.host
     this.database=config.database || defaultConfig.database
     this._language=config.language || defaultConfig.language
-    const authHeader=base64.encode(this.user+':'+this.password)
-    this._axios = axios.create({
-      timeout: defaultConfig.timeout, // 5 minutes sec timeout
-      maxContentLength: defaultConfig.maxContentLength, // 50MBs, just in case
-      headers: {
-        common: {
-          authorization: 'Basic '+authHeader
-        }
-      }
-    })
+    this._timeout=config.timeout || defaultConfig.timeout
+    this._authHeader='Basic '+base64.encode(this.user+':'+this.password)
 
     const methods = ['post', 'get', 'put', 'delete', 'head', 'patch']
     methods.forEach((method)=>{
@@ -55,71 +46,78 @@ class Connection {
   }
 
   disconnect(){
-    return this._axios.get(this.host+'/disconnect').then(response=>{
-      this.emit('disconnected', response)
-      return response
-    }).catch(err=>{
-       // console.log('disconnect',err.message)
-       this._onError(err)
-       return err
-    })
+    return request.get(this.host+'/disconnect')
+      .set('Authorization',this._authHeader)
+      .send()
+      .then(response=>{})
+      .catch(err=>{
+        if(
+            err.response.status===401 && err.response.body && err.response.body.errors &&
+            Array.isArray(err.response.body.errors) && err.response.body.errors.length
+        ){
+          let response=err.response.body.errors[0]
+          this.emit('disconnected', response)
+          return true
+        } else
+          this._onError(err)
+      })
   }
 
   request(method, command, args, data) {
-    //fix for # in url
     args=args ? args.replace('#','') : ''
     const url = this.host+'/'+command+'/'+this.database+'/'+args
-    return this._axios({
-      method: method,
-      url: url,
-      data: data
-    }).then((response)=>{
-      if(response.data)
-        return response.data
-      else if(response.status===204)
-        return true
-      return response
-    }).catch(err=>{
-      this._onError(err)
-      return err
-    })
+    const requestInstance=request[method](url)
+      .timeout(this._timeout)
+      .set('Authorization', this._authHeader)
+      .set('Accept', 'application/json')
+      .set('Accept-Encoding','gzip, deflate')
+    if(['get','delete'].indexOf(method.toLowerCase())===-1)
+      requestInstance.set('Content-Length', data ? JSON.stringify(data).length : null)
+    return requestInstance.send(data)
+      .then((response)=>{
+        if(response.statusCode===204)
+          return true
+        return response.body
+      }).catch(err=>{
+        this._onError(err)
+        throw err
+      })
   }
 
   command(command, parameters, limit, fetchplan) {
-    let args=this._language
-    if(limit || fetchplan)
-      args=this._makeArgsUrl('', limit, fetchplan)
-    return this.post('command', args, {
+    const postData={
       command: command,
       parameters: parameters || []
-    }, limit, fetchplan)
+    }
+    const args=this._makeArgsUrl('', limit, fetchplan)
+    return this.post('command', args, postData)
   }
 
   query(query, parameters, limit, fetchplan) {
-    const language = this._language;
+    const language = this._language
     if(!parameters){
       const args=this._makeArgsUrl(query, limit, fetchplan)
       return this.get('query', args)
     }
     return this.command(query, parameters, limit, fetchplan)
   }
+
   _makeArgsUrl(command, limit, fetchplan){
-    limit=limit || ''
-    fetchplan=fetchplan || ''
-    command=encodeURIComponent(command)
-    return `${this._language}/${command}/${limit}/${fetchplan}`
+    limit=limit ? `/${limit}` : ''
+    fetchplan=fetchplan ? `/${fetchplan}` : ''
+    command=command ? encodeURIComponent(command) : ''
+    return `${this._language}/${command}${limit}${fetchplan}`
   }
 
   _onError(err){
-    if(err){
-      if(err.message)
-        this.emit('error', err.message, err)
-      else if(err.response && err.response.data)
-        this.emit('error', err.response.data, err)
-      else
-        this.emit('error',err)
-    } else
+    if(!err)
       this.emit('error')
+    else if(err.response && err.response.body)
+      this.emit('error', err.response.statusCode+': '+err.message, err.response.body)
+    else if(err.response && err.response.text)
+      this.emit('error', err.response.statusCode+': '+err.message, err.response.text)
+    else
+      this.emit('error',err)
   }
 
   language(language) {

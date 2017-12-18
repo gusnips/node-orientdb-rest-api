@@ -1,9 +1,10 @@
 orientdb-rest-api
 ==================
 
-A Node.js driver to talk to the [OrientDB REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html)
+A Node.js driver to talk to the [OrientDB REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html) for node and the browser
+Also works with electron and react-native
 
-Very basic http wrapper using [axios](https://github.com/axios/axios) based on [node-orient-http](https://github.com/Havelaer/node-orientdb-http) and tested on [OrientDb](http://www.orientdb.org/) 2.2.31
+Very basic http wrapper using [superagent](https://visionmedia.github.io/superagent/) based on [node-orient-http](https://github.com/Havelaer/node-orientdb-http) and tested on [OrientDb](http://www.orientdb.org/) 2.2.31
 
 ## Install
 
@@ -68,7 +69,7 @@ Response will be something like:
 
 ## Methods
 
-All methods return a Promise, see [axios](https://github.com/axios/axios) for more information  
+All methods return a Promise, see [superagent](https://visionmedia.github.io/superagent/) for more information  
 See [OrientDB-REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html) for a list of commands  
 ```javascript
 // general api
@@ -183,9 +184,25 @@ db.query('error query').catch((err)=>{
   console.log(err.message)
 })
 ```
-See [Axios Error Handling](https://github.com/axios/axios#handling-errors) for more information
+See [Axios Error Handling](https://visionmedia.github.io/superagent/#error-handling) for more information
+
+## Config
+
+```javascript
+{
+  user: 'root',
+  password: 'root_passwd',
+  host: 'http://127.0.0.1:2480',
+  database: 'GratefulDeadConcerts',
+  language: 'sql',
+  timeout: 1000*5,
+}
+```
 
 ## Changelog
+1.1.0
+
+* Changed from axios to superagent
 
 1.0.0
 
