@@ -184,7 +184,7 @@ db.query('error query').catch((err)=>{
   console.log(err.message)
 })
 ```
-See [Axios Error Handling](https://visionmedia.github.io/superagent/#error-handling) for more information
+See [SuperAgent Error Handling](https://visionmedia.github.io/superagent/#error-handling) for more information
 
 ## Config
 
