@@ -71,7 +71,7 @@ class Connection {
       .set('Authorization', this._authHeader)
       .set('Accept', 'application/json')
       .set('Accept-Encoding','gzip, deflate')
-    if(['get','delete'].indexOf(method.toLowerCase())===-1)
+    if(['post','put','patch'].indexOf(method.toLowerCase())>-1)
       requestInstance.set('Content-Length', data ? JSON.stringify(data).length : null)
     return requestInstance.send(data)
       .then((response)=>{

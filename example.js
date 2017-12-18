@@ -1,5 +1,5 @@
 const OrientDB=require ('./index')
-const config=require('./config/sample')
+const config=require('./config/local')
 const db=new OrientDB(config)
 db.connect().then(async (res)=>{
   console.log(res)
