@@ -64,7 +64,8 @@ class Connection {
   }
 
   request(method, command, args, data) {
-    args=args ? args.replace('#','') : ''
+    if(args && typeof args==='string')
+      args=args ? args.replace('#','') : ''
     const url = this.host+'/'+command+'/'+this.database+'/'+args
     const requestInstance=request[method](url)
       .timeout(this._timeout)
@@ -102,6 +103,15 @@ class Connection {
     return this.command(query, parameters, limit, fetchplan)
   }
 
+  queryOne(query, parameters, fetchplan){
+    return this.command(query, parameters, 1, fetchplan)
+      .then((response)=>{
+        if(response.result && response.result.length)
+          return response.result[0]
+        return null
+      })
+  }
+
   _makeArgsUrl(command, limit, fetchplan){
     limit=limit ? `/${limit}` : ''
     fetchplan=fetchplan ? `/${fetchplan}` : ''
@@ -124,13 +134,16 @@ class Connection {
     this._language = language;
     return this
   }
+  _getDateTimeFormatted(from){
+    let d=new Date()
+    if(from)
+      d=new Date(from)
+    return [d.getFullYear(),d.getMonth()+1,d.getDate()].join('-')+' '+
+      [d.getHours(),d.getMinutes(),d.getSeconds()].join(':')
+  }
 }
 
 EventEmitter(Connection.prototype)
-/**
- * public connect method
- * creates new connection instance
- */
 
  // Expose the class either via AMD, CommonJS or the global object
  if (typeof define === 'function' && define.amd) {
