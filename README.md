@@ -79,25 +79,37 @@ See [superagent](https://visionmedia.github.io/superagent/) for more information
 
 #### Rest commands:
 
-`db.get(command, queryParams)` returns `object`  
-`db.delete(command, queryParams)` returns `boolean`  
-`db.head(command, queryParams)` returns `boolean`  
+```js
+db.get(command, queryParams) // results in `object`  
+db.delete(command, queryParams) // results in `boolean`  
+db.head(command, queryParams) // results in `boolean`  
 
-`db.post(command, queryParams, postBody)` returns `object`  
-`db.put(command, queryParams, postBody)` returns `object`  
-`db.patch(command, queryParams, postBody)` returns `object`  
+db.post(command, queryParams, postBody) //results in `object`  
+db.put(command, queryParams, postBody) //results in  `object`  
+db.patch(command, queryParams, postBody) //results in `object`  
+```
 
 #### Custom commands
 
-`db.query(query, [paramenters, limit, fetchplan])` returns `object` containing the result of the query  
-`db.command(query, [paramenters, limit, fetchplan])` returns `object`|`boolean` containing the result of the command  
-`db.insert(className, data)` returns `boolean` shortcut as `db.post('document', null, data)` and set '@class' property of data  
-`db.queryOne(query, paramenters, fetchplan)` returns `Object`|`null` shortcut for setting limit 1 and return either first result or null  
+```js
+// results in `object` containing the result of the query  
+db.query(query, [paramenters, limit, fetchplan])
+// results in `object`|`boolean` containing the result of the command  
+db.command(query, [paramenters, limit, fetchplan])
+// results in `boolean` shortcut as `db.post('document', null, data)` and set '@class' property of data  
+db.insert(className, data)
+// results in `Object`|`null` shortcut for setting limit 1 and return either first result or null  
+db.queryOne(query, paramenters, fetchplan)
+```
 
 #### Helpers
 
-`db.getDateTimeFormatted([fromDate])` return `string` returns a datetime formatted date. fromDate is optional, if not set, it will use current datetime  
-`db.getDateFormatted([fromDate])` same as above  
+```js
+// return `string` returns a datetime formatted date. fromDate is optional, if not set, it will use current datetime  
+db.getDateTimeFormatted([fromDate])
+// same as above, for a date object
+db.getDateFormatted([fromDate])
+```
 
 #### Examples:
 ```js
