@@ -34,13 +34,13 @@ db.connect().then(async ()=>{
 
 ## Query and Command query
 
-Syntax:
+#### Syntax
 ```js
 db.query(query, parameters, limit, fetchplan)
 db.command(query, parameters, limit, fetchplan)
 ```
 
-Examples:
+#### Examples
 
 ```javascript
 db.command('insert into V set name = ?', ["Batman"]).then(async ()=>{
@@ -74,8 +74,10 @@ See [superagent](https://visionmedia.github.io/superagent/) for more information
 
 #### Connection
 
-`db.connect()` returns `boolean`  
-`db.disconnect()` returns `boolean`  
+```js
+db.connect() // results in `boolean`  
+db.disconnect() // results in `boolean`  
+```
 
 #### Rest commands:
 
@@ -92,44 +94,49 @@ db.patch(command, queryParams, postBody) //results in `object`
 #### Custom commands
 
 ```js
-// results in `object` containing the result of the query  
 db.query(query, [paramenters, limit, fetchplan])
-// results in `object`|`boolean` containing the result of the command  
+// results in `object` containing the result of the query  
 db.command(query, [paramenters, limit, fetchplan])
-// results in `boolean` shortcut as `db.post('document', null, data)` and set '@class' property of data  
+// results in `object`|`boolean` containing the result of the command  
 db.insert(className, data)
-// results in `Object`|`null` shortcut for setting limit 1 and return either first result or null  
+// results in `boolean` shortcut as `db.post('document', null, data)` and set '@class' property of data  
 db.queryOne(query, paramenters, fetchplan)
+// results in `Object`|`null` shortcut for setting limit 1 and return either first result or null  
 ```
 
 #### Helpers
 
 ```js
-// return `string` returns a datetime formatted date. fromDate is optional, if not set, it will use current datetime  
 db.getDateTimeFormatted([fromDate])
-// same as above, for a date object
+// return `string` returns a datetime formatted date. fromDate is optional, if not set, it will use current datetime  
 db.getDateFormatted([fromDate])
+// return `string` same as above, for a date object
 ```
 
-#### Examples:
+#### Examples
 ```js
 // create
 db.post('document', null, { '@class': 'V', name: 'Gustavo Salome'}).then().catch()
 
 // deleting, should return true
-db.delete('document', '9:1').then().catch()
+db.delete('document', '9:1').then((status)=>{}).catch()
 
 // create as command, should return the new record
-db.command('insert into V set name = "Batman"').then().catch()
+db.command('insert into V set name = "Batman"').then((newRecord)=>{}).catch()
 
-db.query('select * from V where name = "Batman"').then((res)=>{
-  console.log(res)
-}, 1 /*1 is the limit*/).catch(err=>{
+// query limit 1, named parameters
+db.query('select * from V where name = :name', {
+  name: "Batman"
+}).then((arrayWithResults)=>{
+  console.log(arrayWithResults)
+}, 1).catch(err=>{
+  // superagent request error object
   console.log(err.message)
 })
 ```
 
 #### Language
+
 ```js
 db.language('gremlin').query("g.V('@class', 'User')").then(successHandler2).catch(errorHandler2)
 ```
@@ -231,6 +238,11 @@ See [SuperAgent Error Handling](https://visionmedia.github.io/superagent/#error-
 ```
 
 ## Changelog
+1.1.1
+
+* Added queryOne and insert methods
+* Added getDateFormatted and getDateTimeFormatted methods
+
 1.1.0
 
 * Changed from axios to superagent
