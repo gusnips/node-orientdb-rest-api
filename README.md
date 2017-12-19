@@ -179,33 +179,40 @@ const db=new OrientDB({
   host: 'http://localhost:2480',
   database: 'GratefulDeadConcerts',
 })
-const config=require('./config/local')
-const db=new OrientDB(config)
+
 db.connect().then(async (res)=>{
   console.log(res) // true
+
   res=await db.command('insert into V set name = ?', ["Batman"])
   console.log(res) // Object containing the new record
-  res=await db.query('select * from V where name = :name', {
+
+  res=await db.queryOne('select * from V where name = :name', {
     name: "Batman"
   })
   console.log(res) // Object containing the fetched record
+
   res=await db.command('select * from V where name = ?', ["Batman"], 1)
   console.log(res) // Same object containing the fetched record
+
   res=await db.delete('document', res.result[0]['@rid'])
   console.log(res) // true
+
   res=await db.disconnect()
+  console.log(res) // true
 })
-db.on('connected',(res)=>{
-  console.log('connected')
+
+db.once('connected',(res)=>{
+  console.log('connected!!')
 })
+
 db.on('error',(message, err)=>{
   console.log(message)
   process.exit()
 })
-db.on('disconnected',(res)=>{
+
+db.once('disconnected',(res)=>{
   console.log('disconnected')
 })
-
 ```
 
 ## Api
