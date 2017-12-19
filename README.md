@@ -1,8 +1,7 @@
 # Orientdb Rest Api Driver
-==================
 
-A Node.js driver to talk to the [OrientDB REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html) for `node` and the `browser`
-Also works with `electron` and `react-native`
+A Node.js driver to talk to the [OrientDB REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html) for `node` and the `browser`  
+Also works with `electron` and `react-native`  
 
 Very basic http wrapper using [superagent](https://visionmedia.github.io/superagent/) based on [node-orient-http](https://github.com/Havelaer/node-orientdb-http) and tested on [OrientDb](http://www.orientdb.org/) 2.2.31
 
