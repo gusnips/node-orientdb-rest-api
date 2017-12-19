@@ -74,8 +74,8 @@ See [superagent](https://visionmedia.github.io/superagent/) for more information
 
 #### Connection
 
-`db.connect()` returns `boolean`
-`db.disconnect()` returns `boolean`
+`db.connect()` returns `boolean`  
+`db.disconnect()` returns `boolean`  
 
 #### Rest commands:
 
