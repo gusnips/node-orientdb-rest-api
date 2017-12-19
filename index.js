@@ -112,6 +112,11 @@ class Connection {
       })
   }
 
+  insert(className, data){
+    data['@class']=className
+    return this.post('document', null, data)
+  }
+
   _makeArgsUrl(command, limit, fetchplan){
     limit=limit ? `/${limit}` : ''
     fetchplan=fetchplan ? `/${fetchplan}` : ''
@@ -134,12 +139,19 @@ class Connection {
     this._language = language;
     return this
   }
-  _getDateTimeFormatted(from){
+  getDateTimeFormatted(from){
     let d=new Date()
     if(from)
       d=new Date(from)
     return [d.getFullYear(),d.getMonth()+1,d.getDate()].join('-')+' '+
       [d.getHours(),d.getMinutes(),d.getSeconds()].join(':')
+  }
+
+  getDateFormatted(from){
+    let d=new Date()
+    if(from)
+      d=new Date(from)
+    return [d.getFullYear(),d.getMonth()+1,d.getDate()].join('-')
   }
 }
 

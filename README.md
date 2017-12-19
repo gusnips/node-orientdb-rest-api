@@ -32,7 +32,7 @@ db.connect().then(async ()=>{
 })
 ```
 
-## Command query and Query
+## Query and Command query
 
 Syntax:
 ```js
@@ -69,41 +69,60 @@ Response will be something like:
 
 ## Methods
 
-All methods return a Promise, see [superagent](https://visionmedia.github.io/superagent/) for more information  
-See [OrientDB-REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html) for a list of commands  
-```javascript
-// general api
-db.get(command, queryParams)
-db.delete(command, queryParams)
-db.head(command, queryParams)
+All methods return a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)  
+See [superagent](https://visionmedia.github.io/superagent/) for more information about the response and errors
 
-db.post(command, queryParams, postBody)
-db.put(command, queryParams, postBody)
-db.patch(command, queryParams, postBody)
+#### Connection
 
+`db.connect()` returns `boolean`
+`db.disconnect()` returns `boolean`
+
+#### Rest commands:
+
+`db.get(command, queryParams)` returns `object`  
+`db.delete(command, queryParams)` returns `boolean`  
+`db.head(command, queryParams)` returns `boolean`  
+
+`db.post(command, queryParams, postBody)` returns `object`  
+`db.put(command, queryParams, postBody)` returns `object`  
+`db.patch(command, queryParams, postBody)` returns `object`  
+
+#### Custom commands
+
+`db.query(query, [paramenters, limit, fetchplan])` returns `object` containing the result of the query  
+`db.command(query, [paramenters, limit, fetchplan])` returns `object`|`boolean` containing the result of the command  
+`db.insert(className, data)` returns `boolean` shortcut as `db.post('document', null, data)` and set '@class' property of data  
+`db.queryOne(query, paramenters, fetchplan)` returns `Object`|`null` shortcut for setting limit 1 and return either first result or null  
+
+#### Helpers
+
+`db.getDateTimeFormatted([fromDate])` return `string` returns a datetime formatted date. fromDate is optional, if not set, it will use current datetime  
+`db.getDateFormatted([fromDate])` same as above  
+
+#### Examples:
+```js
 // create
-db.post('document', null, { '@class': 'V', name: 'Gustavo Salome'})
-  .then(successHandler)
-  .catch(errorHandler)
+db.post('document', null, { '@class': 'V', name: 'Gustavo Salome'}).then().catch()
 
 // deleting, should return true
-db.delete('document', '9:1')
-  .then(successHandler)
-  .catch(errorHandler)
+db.delete('document', '9:1').then().catch()
 
 // create as command, should return the new record
-db.command('insert into V set name = "Batman"')
-  .then(successHandler)
-  .catch(errorHandler)
+db.command('insert into V set name = "Batman"').then().catch()
 
 db.query('select * from V where name = "Batman"').then((res)=>{
   console.log(res)
-}).catch(err=>{
+}, 1 /*1 is the limit*/).catch(err=>{
   console.log(err.message)
 })
+```
 
+#### Language
+```js
 db.language('gremlin').query("g.V('@class', 'User')").then(successHandler2).catch(errorHandler2)
 ```
+
+See [OrientDB-REST API](http://orientdb.com/docs/2.2.x/OrientDB-REST.html) for a full list of rest commands  
 
 ## Events
 
